@@ -908,12 +908,13 @@ const gotTheLock = webOnlyMode ? true : app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (_event, commandLine, workingDirectory) => {
+    console.log('[Main] second-instance event', { commandLine, workingDirectory });
     // 如果尝试启动第二个实例，则聚焦到主窗口
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       if (!mainWindow.isVisible()) mainWindow.show();
-      mainWindow.focus();
+      if (!mainWindow.isFocused()) mainWindow.focus();
     }
   });
 
@@ -2085,7 +2086,8 @@ if (!gotTheLock) {
     // 如果窗口已经存在，就不再创建新窗口
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      if (!mainWindow.isFocused()) mainWindow.focus();
       return;
     }
 
@@ -2421,7 +2423,7 @@ if (!gotTheLock) {
       }
       if (mainWindow && !mainWindow.isDestroyed()) {
         if (!mainWindow.isVisible()) mainWindow.show();
-        mainWindow.focus();
+        if (!mainWindow.isFocused()) mainWindow.focus();
         return;
       }
       if (BrowserWindow.getAllWindows().length === 0) {

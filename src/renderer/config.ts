@@ -116,6 +116,17 @@ export interface AppConfig {
         supportsImage?: boolean;
       }>;
     };
+    xiaomi: {
+      enabled: boolean;
+      apiKey: string;
+      baseUrl: string;
+      apiFormat?: 'anthropic' | 'openai';
+      models?: Array<{
+        id: string;
+        name: string;
+        supportsImage?: boolean;
+      }>;
+    };
     ollama: {
       enabled: boolean;
       apiKey: string;
@@ -190,6 +201,7 @@ export const defaultConfig: AppConfig = {
       apiFormat: 'openai',
       models: [
         { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', supportsImage: true },
+        { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', supportsImage: true },
         { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', supportsImage: true }
       ]
     },
@@ -253,6 +265,15 @@ export const defaultConfig: AppConfig = {
         { id: 'qwen3-coder-plus', name: 'Qwen3 Coder Plus', supportsImage: false }
       ]
     },
+    xiaomi: {
+      enabled: false,
+      apiKey: '',
+      baseUrl: 'https://api.xiaomimimo.com/anthropic',
+      apiFormat: 'anthropic',
+      models: [
+        { id: 'mimo-v2-flash', name: 'MiMo V2 Flash', supportsImage: false }
+      ]
+    },
     openrouter: {
       enabled: false,
       apiKey: '',
@@ -299,7 +320,7 @@ export const CONFIG_KEYS = {
 };
 
 // 模型提供商分类
-export const CHINA_PROVIDERS = ['deepseek', 'moonshot', 'qwen', 'zhipu', 'minimax', 'ollama'] as const;
+export const CHINA_PROVIDERS = ['deepseek', 'moonshot', 'qwen', 'zhipu', 'minimax', 'xiaomi', 'ollama'] as const;
 export const GLOBAL_PROVIDERS = ['openai', 'gemini', 'anthropic', 'openrouter'] as const;
 export const EN_PRIORITY_PROVIDERS = ['openai', 'anthropic', 'gemini'] as const;
 
@@ -322,5 +343,13 @@ export const getVisibleProviders = (language: 'zh' | 'en'): readonly string[] =>
     ...CHINA_PROVIDERS,
     ...GLOBAL_PROVIDERS,
   ];
-  return [...new Set(orderedProviders)];
+  const uniqueProviders = [...new Set(orderedProviders)];
+  const ollamaIndex = uniqueProviders.indexOf('ollama');
+  if (ollamaIndex === -1) {
+    return uniqueProviders;
+  }
+
+  uniqueProviders.splice(ollamaIndex, 1);
+  uniqueProviders.push('ollama');
+  return uniqueProviders;
 };
